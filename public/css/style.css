@@ -1,0 +1,108 @@
+/* global style */
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background-color: #f8f9fa;
+}
+
+/* active style */
+.nav-item .nav-link.active {
+  font-weight: bold;
+  color: white !important;
+}
+
+/* personal image */
+.profile-image {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border: 5px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.profile-image-lg {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border: 5px solid #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* personal introduction text */
+.intro-text {
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* footer style */
+.footer {
+  margin-top: 3rem;
+}
+
+/* game style */
+.game-container {
+  min-height: 500px;
+}
+
+.option-btn {
+  padding: 12px;
+  font-size: 1.05rem;
+  transition: all 0.2s;
+}
+
+.option-btn:hover:not(.disabled) {
+  transform: translateY(-2px);
+}
+
+/* challenge button style */
+.challenge-btn {
+  transition: all 0.2s;
+}
+
+.challenge-btn:hover {
+  transform: scale(1.05);
+}
+
+/* timer style */
+#timer {
+  font-size: 0.9rem;
+  padding: 5px 10px;
+  min-width: 40px;
+  text-align: center;
+  transition: background-color 0.3s ease;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+/* challenge notificate style */
+#challenge-notification {
+  position: relative;
+  padding: 1rem;
+}
+
+/* game status and the message style */
+#status-message {
+  font-size: 0.95rem;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+/* responsive adjustment */
+@media (max-width: 768px) {
+  .profile-image {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .profile-image-lg {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .intro-text {
+    font-size: 1rem;
+  }
+  
+  .game-container {
+    min-height: 400px;
+  }
+} 

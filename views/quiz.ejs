@@ -1,0 +1,140 @@
+<div class="row">
+  <div class="col-md-4">
+    <div class="card mb-4">
+      <div class="card-header bg-primary text-white">
+        <h4 class="mb-0">Player Information</h4>
+      </div>
+      <div class="card-body">
+        <div id="login-section">
+          <div class="form-group mb-3">
+            <label for="username" class="form-label">Please enter your username:</label>
+            <input type="text" id="username" class="form-control" placeholder="Your username...">
+          </div>
+          <button id="join-btn" class="btn btn-primary w-100">Join game !</button>
+          <div id="join-error" class="text-danger mt-2"></div>
+        </div>
+        
+        <div id="user-info" class="d-none">
+          <h5>Welcome, <span id="current-user"></span>!</h5>
+          <div class="alert alert-info" id="status-message">
+            Waiting for challenge or choose a player to challenge
+          </div>
+          <button id="logout-btn" class="btn btn-outline-danger btn-sm mt-2">Quit?</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-header bg-secondary text-white">
+        <h4 class="mb-0">Online Player</h4>
+      </div>
+      <div class="card-body">
+        <ul id="user-list" class="list-group">
+          <li class="list-group-item text-center text-muted">Sorry, no online players</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="col-md-8">
+    <div class="card game-container">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0">Quiz Game</h4>
+      </div>
+      <div class="card-body">
+        <!-- game waiting unit -->
+        <div id="game-waiting" class="text-center py-5">
+          <h3>Waiting for start</h3>
+          <p class="text-muted">please join game first and challenge a player</p>
+        </div>
+        
+        <!-- challenge notificate -->
+        <div id="challenge-notification" class="alert alert-warning d-none">
+          <p><span id="challenger-name"></span> challenge you!</p>
+          <div class="d-flex justify-content-end">
+            <button id="accept-btn" class="btn btn-success btn-sm me-2">Accept</button>
+            <button id="reject-btn" class="btn btn-danger btn-sm">Reject</button>
+          </div>
+        </div>
+        
+        <!-- game unit -->
+        <div id="game-ui" class="d-none">
+          <div class="mb-3 d-flex justify-content-between">
+            <div>
+              <span class="badge bg-primary me-2">question <span id="question-number">1</span>/<span id="total-questions">5</span></span>
+              <span id="timer" class="badge bg-warning">15</span>
+            </div>
+            <div>
+              Fighting: <span id="opponent-name" class="fw-bold"></span>
+            </div>
+          </div>
+          
+          <!-- score display -->
+          <div class="score-display mb-3">
+            <div class="row">
+              <div class="col-6">
+                <div class="card bg-light">
+                  <div class="card-body p-2 text-center">
+                    <h6>Your score</h6>
+                    <h4 id="your-score">0</h4>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="card bg-light">
+                  <div class="card-body p-2 text-center">
+                    <h6>Other player's score</h6>
+                    <h4 id="opponent-score">0</h4>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- question and answer -->
+          <div class="question-container">
+            <h4 id="question-text" class="mb-4">Question will be displayed here</h4>
+            <div id="options-container" class="d-grid gap-2">
+              <!-- options will be displayed here through JS -->
+            </div>
+          </div>
+          
+          <!-- answer feedback -->
+          <div id="answer-feedback" class="alert mt-3 d-none"></div>
+        </div>
+        
+        <!-- game result -->
+        <div id="game-result" class="text-center py-4 d-none">
+          <h3>Game over!</h3>
+          <div class="final-scores my-4">
+            <div class="row">
+              <div class="col-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Your score</h5>
+                    <h3 id="final-your-score">0</h3>
+                  </div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="card">
+                  <div class="card-body">
+                    <h5>Other player's score</h5>
+                    <h3 id="final-opponent-score">0</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="winner-display" class="alert alert-success my-3">
+            <!-- victory information will be displayed here -->
+          </div>
+          <button id="new-game-btn" class="btn btn-primary">Start a new game</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/quiz.js"></script>
