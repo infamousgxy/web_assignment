@@ -1,7 +1,7 @@
 # JC2503 report of Web Application Development
 
-**Student Name**: Xinyi Guo (郭新溢)  
-**ID**: [50090961]  
+**Student Name**: xxx (郭**)  
+**ID**: [50090xxx]  
 **Date**: 29.05.2025
 
 ## 1.The overall design of the website.
@@ -82,6 +82,8 @@ This design encourages quick and accurate responses, enhancing the game's compet
    - Bottom Row​​: Uses col-12 to allow the "Quiz Game" section to occupy full width.
    - ​​Spacing​​: Added mb-4 class to create proper spacing between rows.
    - Card Height Consistency​​: Applied h-100 to the top cards to ensure uniform height.
+
+![the picture](public/images/ui_layout.png) 
 
 **Multi-Game Room Management​​:**: Supporting simultaneous gameplay for multiple player pairs required careful state management to prevent cross-room interference. Solutions implemented:
    - ​​Unique Game ID Generation​​: gameId_generated = game_${Date.now()} ensures distinct identifiers.
