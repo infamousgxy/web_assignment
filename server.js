@@ -4,23 +4,23 @@ const socketIo = require('socket.io');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
 
-// Create Express app and HTTP server
+// create express app and http server    
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
 
-// Set view engine
+// set view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 app.use(expressLayouts);
 app.set('layout', 'layout');
 
-// Static file middleware
+// static file middleware  
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
+// routes define
 app.get('/', (req, res) => {
   res.render('index');
 });
@@ -33,13 +33,13 @@ app.get('/quiz', (req, res) => {
   res.render('quiz');
 });
 
-// Online user management
-const onlineUsers = {};
-const userChallenges = {};
-const activeGames = {};
+// online user manage
+const onlineUsers_data = {};
+const userChallenges_map = {};
+const activeGames_list = {};
 
-// Quiz questions data 
-const quizQuestions = [
+// quiz questions data store
+const quizQuestions_array = [
   {
     question: "Which product was designed by Apple ?",
     options: ["Mac", "Switch", "Thinkpad", "Kindle"],
@@ -67,311 +67,311 @@ const quizQuestions = [
   }
 ];
 
-// Socket.io connection handle
+// socket.io connection handle process
 io.on('connection', (socket) => {
   console.log('User connect:', socket.id);
   
-  // User join
+  // user join process
   socket.on('userJoin', (username) => {
-// Check if username already exist
-    const userExists = Object.values(onlineUsers).some(user => user.username === username);
+    // check if username already exist in system
+    const userExists_check = Object.values(onlineUsers_data).some(user => user.username === username);
     
-    if (userExists) {
+    if (userExists_check) {
       socket.emit('joinError', 'This username already used, please choose another one');
       return;
     }
     
-    onlineUsers[socket.id] = {
+    onlineUsers_data[socket.id] = {
       id: socket.id,
       username: username,
       status: 'online'  
-      // online, busy
+      // online, busy status define
     };
     
 
-    // Send current online user list
+    // send current online user list to all clients
     
-    io.emit('updateUserList', Object.values(onlineUsers));
-    console.log(`${username} join the game`);
+    io.emit('updateUserList', Object.values(onlineUsers_data));
+    console.log(`${username} join the game successfully`);
   });
   
-// Sending challenge
+  // sending challenge to other player
   socket.on('sendChallenge', (targetId) => {
-    const challenger = onlineUsers[socket.id];
-    const target = onlineUsers[targetId];
+    const challenger_user = onlineUsers_data[socket.id];
+    const target_user = onlineUsers_data[targetId];
     
-    if (!target || !challenger) return;
+    if (!target_user || !challenger_user) return;
     
-    console.log(`${challenger.username} send challenge to ${target.username}`);
+    console.log(`${challenger_user.username} send challenge to ${target_user.username}`);
     
-    // Record challenge
-    userChallenges[targetId] = {
+    // record challenge information
+    userChallenges_map[targetId] = {
       challengerId: socket.id,
-      challengerName: challenger.username
+      challengerName: challenger_user.username
     };
     
-    // Send challenge notification to target user
+    // send challenge notification to target user
     io.to(targetId).emit('challengeReceived', {
       id: socket.id,
-      username: challenger.username
+      username: challenger_user.username
     });
   });
   
-  // Accept challenge
+  // accept challenge process
   socket.on('acceptChallenge', (challengerId) => {
-    const player1 = onlineUsers[challengerId];
-    const player2 = onlineUsers[socket.id];
+    const player1_info = onlineUsers_data[challengerId];
+    const player2_info = onlineUsers_data[socket.id];
     
-    if (!player1 || !player2) return;
+    if (!player1_info || !player2_info) return;
     
-    console.log(`${player2.username} accept the challenge from ${player1.username}`);
+    console.log(`${player2_info.username} accept the challenge from ${player1_info.username}`);
     
-    // Set both players status to busy
-    player1.status = 'busy';
-    player2.status = 'busy';
+    // set both players status to busy
+    player1_info.status = 'busy';
+    player2_info.status = 'busy';
     
-    // Create game room ID
-    const gameId = `game_${Date.now()}`;
+    // create game room id with timestamp
+    const gameId_generated = `game_${Date.now()}`;
     
-    // Create game status
-    activeGames[gameId] = {
+    // create game status object
+    activeGames_list[gameId_generated] = {
       players: [
-        { id: challengerId, username: player1.username, score: 0, answered: false },
-        { id: socket.id, username: player2.username, score: 0, answered: false }
+        { id: challengerId, username: player1_info.username, score: 0, answered: false },
+        { id: socket.id, username: player2_info.username, score: 0, answered: false }
       ],
       currentQuestion: 0,
-      questions: [...quizQuestions].sort(() => Math.random() - 0.5).slice(0, 5)
+      questions: [...quizQuestions_array].sort(() => Math.random() - 0.5).slice(0, 5)
     };
     
-    // Add both players to game room
+    // add both players to game room
     io.to(challengerId).emit('gameStart', { 
-      gameId, 
-      opponent: player2.username,
-      questionCount: activeGames[gameId].questions.length
+      gameId: gameId_generated, 
+      opponent: player2_info.username,
+      questionCount: activeGames_list[gameId_generated].questions.length
     });
     
     io.to(socket.id).emit('gameStart', { 
-      gameId, 
-      opponent: player1.username,
-      questionCount: activeGames[gameId].questions.length
+      gameId: gameId_generated, 
+      opponent: player1_info.username,
+      questionCount: activeGames_list[gameId_generated].questions.length
     });
     
-    // Update user list
-    io.emit('updateUserList', Object.values(onlineUsers));
+    // update user list to all clients
+    io.emit('updateUserList', Object.values(onlineUsers_data));
     
-    // Start send first question
+    // start send first question after delay
     setTimeout(() => {
-      sendQuestion(gameId);
+      sendQuestion_func(gameId_generated);
     }, 2000);
   });
   
-  // Reject challenge
+  // reject challenge process
   socket.on('rejectChallenge', (challengerId) => {
-    io.to(challengerId).emit('challengeRejected', onlineUsers[socket.id].username);
+    io.to(challengerId).emit('challengeRejected', onlineUsers_data[socket.id].username);
   });
   
-  // Receive answer
+  // receive answer from player
   socket.on('submitAnswer', ({ gameId, answerIndex, timeout }) => {
-    const game = activeGames[gameId];
-    if (!game) return;
+    const game_data = activeGames_list[gameId];
+    if (!game_data) return;
     
-    // Find player index
-    const playerIndex = game.players.findIndex(p => p.id === socket.id);
-    if (playerIndex === -1) return;
+    // find player index in game
+    const playerIndex_found = game_data.players.findIndex(p => p.id === socket.id);
+    if (playerIndex_found === -1) return;
     
-    // If player already answered, ignore
-    if (game.players[playerIndex].answered) return;
+    // if player already answered, ignore this request
+    if (game_data.players[playerIndex_found].answered) return;
     
-    // Mark player has answered
-    game.players[playerIndex].answered = true;
+    // mark player has answered
+    game_data.players[playerIndex_found].answered = true;
     
-    // Handle timeout separately
+    // handle timeout separately case
     if (timeout) {
-      console.log(`Player ${game.players[playerIndex].username} timeout not answer question ${game.currentQuestion + 1}`);
+      console.log(`Player ${game_data.players[playerIndex_found].username} timeout not answer question ${game_data.currentQuestion + 1}`);
       
-      // Record timeout (for opponent to judge)
-      game.players[playerIndex].lastAnswerCorrect = false;
+      // record timeout result for opponent to judge
+      game_data.players[playerIndex_found].lastAnswerCorrect = false;
       
-      // Notify player answer result
+      // notify player answer result
       io.to(socket.id).emit('answerResult', {
         correct: false,
-        score: game.players[playerIndex].score
+        score: game_data.players[playerIndex_found].score
       });
       
-      // Check if both players answered or time up
-      checkAndProceed(gameId);
+      // check if both players answered or time up
+      checkAndProceed_func(gameId);
       return;
     }
     
-    // Check if answer correct
-    const currentQ = game.questions[game.currentQuestion];
-    const isCorrect = (answerIndex === currentQ.correctAnswer);
+    // check if answer correct or not
+    const currentQ_data = game_data.questions[game_data.currentQuestion];
+    const isCorrect_result = (answerIndex === currentQ_data.correctAnswer);
     
-    console.log(`Player ${game.players[playerIndex].username} answer question ${game.currentQuestion + 1}, answer is ${isCorrect ? 'correct' : 'wrong'}`);
+    console.log(`Player ${game_data.players[playerIndex_found].username} answer question ${game_data.currentQuestion + 1}, answer is ${isCorrect_result ? 'correct' : 'wrong'}`);
     
-    // Calculate score based on answer situation
-    const otherPlayerIndex = playerIndex === 0 ? 1 : 0;
+    // calculate score based on answer situation
+    const otherPlayerIndex_calc = playerIndex_found === 0 ? 1 : 0;
     
-    // If first player answer correct, get 2 points; opponent get 0
-    if (isCorrect && !game.players[otherPlayerIndex].answered) {
-      game.players[playerIndex].score += 2;
+    // if first player answer correct, get 2 points; opponent get 0
+    if (isCorrect_result && !game_data.players[otherPlayerIndex_calc].answered) {
+      game_data.players[playerIndex_found].score += 2;
     } 
-    // If opponent answer wrong, but current player answer correct, current player get 1 point
-    else if (isCorrect && game.players[otherPlayerIndex].answered && 
-             game.players[otherPlayerIndex].lastAnswerCorrect === false) {
-      game.players[playerIndex].score += 1;
+    // if opponent answer wrong, but current player answer correct, current player get 1 point
+    else if (isCorrect_result && game_data.players[otherPlayerIndex_calc].answered && 
+             game_data.players[otherPlayerIndex_calc].lastAnswerCorrect === false) {
+      game_data.players[playerIndex_found].score += 1;
     }
     
-    // Record this answer correct or not (for opponent to judge)
-    game.players[playerIndex].lastAnswerCorrect = isCorrect;
+    // record this answer correct or not for opponent to judge
+    game_data.players[playerIndex_found].lastAnswerCorrect = isCorrect_result;
     
-    // Notify player answer result
+    // notify player answer result
     io.to(socket.id).emit('answerResult', {
-      correct: isCorrect,
-      score: game.players[playerIndex].score
+      correct: isCorrect_result,
+      score: game_data.players[playerIndex_found].score
     });
     
-    // Check if both players answered or time up
-    checkAndProceed(gameId);
+    // check if both players answered or time up
+    checkAndProceed_func(gameId);
   });
   
-  // User disconnect
+  // user disconnect event handle
   socket.on('disconnect', () => {
-    const user = onlineUsers[socket.id];
-    if (!user) return;
+    const user_info = onlineUsers_data[socket.id];
+    if (!user_info) return;
     
-    console.log(`${user.username} leave the game`);
+    console.log(`${user_info.username} leave the game`);
     
-    // If user in game, notify opponent
-    Object.keys(activeGames).forEach(gameId => {
-      const game = activeGames[gameId];
-      const playerIndex = game.players.findIndex(p => p.id === socket.id);
+    // if user in game, notify opponent about this
+    Object.keys(activeGames_list).forEach(gameId => {
+      const game_check = activeGames_list[gameId];
+      const playerIndex_check = game_check.players.findIndex(p => p.id === socket.id);
       
-      if (playerIndex !== -1) {
-        const opponentIndex = playerIndex === 0 ? 1 : 0;
-        const opponentId = game.players[opponentIndex].id;
+      if (playerIndex_check !== -1) {
+        const opponentIndex_calc = playerIndex_check === 0 ? 1 : 0;
+        const opponentId_get = game_check.players[opponentIndex_calc].id;
         
-        // Notify opponent game over
-        io.to(opponentId).emit('opponentLeft');
+        // notify opponent game over because player left
+        io.to(opponentId_get).emit('opponentLeft');
         
-        // Update opponent status
-        if (onlineUsers[opponentId]) {
-          onlineUsers[opponentId].status = 'online';
+        // update opponent status back to online
+        if (onlineUsers_data[opponentId_get]) {
+          onlineUsers_data[opponentId_get].status = 'online';
         }
         
-        // Remove game
-        delete activeGames[gameId];
+        // remove game from active list
+        delete activeGames_list[gameId];
       }
     });
     
-    // Remove user
-    delete onlineUsers[socket.id];
+    // remove user from online list
+    delete onlineUsers_data[socket.id];
     
-    // Remove related challenges
-    if (userChallenges[socket.id]) {
-      delete userChallenges[socket.id];
+    // remove related challenges if exist
+    if (userChallenges_map[socket.id]) {
+      delete userChallenges_map[socket.id];
     }
     
-    // Update user list
-    io.emit('updateUserList', Object.values(onlineUsers));
+    // update user list to all clients
+    io.emit('updateUserList', Object.values(onlineUsers_data));
   });
 });
 
-// Send question
-function sendQuestion(gameId) {
-  const game = activeGames[gameId];
-  if (!game) return;
+// send question function define
+function sendQuestion_func(gameId) {
+  const game_obj = activeGames_list[gameId];
+  if (!game_obj) return;
   
-  // If already ask all questions, end game
-  if (game.currentQuestion >= game.questions.length) {
-    endGame(gameId);
+  // if already ask all questions, end game now
+  if (game_obj.currentQuestion >= game_obj.questions.length) {
+    endGame_func(gameId);
     return;
   }
   
-  const currentQ = game.questions[game.currentQuestion];
+  const currentQ_obj = game_obj.questions[game_obj.currentQuestion];
   
-  // Reset player answer status
-  game.players.forEach(player => {
+  // reset player answer status for new question
+  game_obj.players.forEach(player => {
     player.answered = false;
     delete player.lastAnswerCorrect;
   });
   
-  // Send question to both players
-  game.players.forEach(player => {
+  // send question to both players in game
+  game_obj.players.forEach(player => {
     io.to(player.id).emit('newQuestion', {
-      question: currentQ.question,
-      options: currentQ.options,
-      questionNumber: game.currentQuestion + 1,
-      totalQuestions: game.questions.length
+      question: currentQ_obj.question,
+      options: currentQ_obj.options,
+      questionNumber: game_obj.currentQuestion + 1,
+      totalQuestions: game_obj.questions.length
     });
   });
   
-  // Set question timeout (15 seconds)
+  // set question timeout 15 seconds wait
   setTimeout(() => {
-    checkAndProceed(gameId);
+    checkAndProceed_func(gameId);
   }, 15000);
 }
 
-// Check and proceed next step
-function checkAndProceed(gameId) {
-  const game = activeGames[gameId];
-  if (!game) return;
+// check and proceed next step function
+function checkAndProceed_func(gameId) {
+  const game_obj = activeGames_list[gameId];
+  if (!game_obj) return;
   
-  // If both players answered, or time up
-  const allAnswered = game.players.every(player => player.answered);
+  // if both players answered, or time up already
+  const allAnswered_check = game_obj.players.every(player => player.answered);
   
-  if (allAnswered) {
-    // Short wait before next question
+  if (allAnswered_check) {
+    // short wait before next question start
     setTimeout(() => {
-      game.currentQuestion++;
-      sendQuestion(gameId);
+      game_obj.currentQuestion++;
+      sendQuestion_func(gameId);
     }, 5000);
     
-    // Send current scores
-    game.players.forEach(player => {
+    // send current scores to players
+    game_obj.players.forEach(player => {
       io.to(player.id).emit('updateScore', {
         yourScore: player.score,
-        opponentScore: game.players.find(p => p.id !== player.id).score
+        opponentScore: game_obj.players.find(p => p.id !== player.id).score
       });
     });
   }
 }
 
-// End game
-function endGame(gameId) {
-  const game = activeGames[gameId];
-  if (!game) return;
+// end game function define
+function endGame_func(gameId) {
+  const game_obj = activeGames_list[gameId];
+  if (!game_obj) return;
   
-  // Determine winner
-  let winner = null;
-  if (game.players[0].score > game.players[1].score) {
-    winner = game.players[0].username;
-  } else if (game.players[0].score < game.players[1].score) {
-    winner = game.players[1].username;
+  // determine winner of the game
+  let winner_result = null;
+  if (game_obj.players[0].score > game_obj.players[1].score) {
+    winner_result = game_obj.players[0].username;
+  } else if (game_obj.players[0].score < game_obj.players[1].score) {
+    winner_result = game_obj.players[1].username;
   }
   
-  // Send game result
-  game.players.forEach(player => {
+  // send game result to both players
+  game_obj.players.forEach(player => {
     io.to(player.id).emit('gameEnd', {
       yourScore: player.score,
-      opponentScore: game.players.find(p => p.id !== player.id).score,
-      winner: winner
+      opponentScore: game_obj.players.find(p => p.id !== player.id).score,
+      winner: winner_result
     });
     
-    // Update player status
-    if (onlineUsers[player.id]) {
-      onlineUsers[player.id].status = 'online';
+    // update player status back to online
+    if (onlineUsers_data[player.id]) {
+      onlineUsers_data[player.id].status = 'online';
     }
   });
   
-  // Remove game
-  delete activeGames[gameId];
+  // remove game from active list
+  delete activeGames_list[gameId];
   
-  // Update user list
-  io.emit('updateUserList', Object.values(onlineUsers));
+  // update user list to all clients
+  io.emit('updateUserList', Object.values(onlineUsers_data));
 }
 
-// Start server
+// start server on port
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

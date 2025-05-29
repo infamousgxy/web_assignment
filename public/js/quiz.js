@@ -1,435 +1,424 @@
-// Establish Socket.io connection
+// establish socket.io connection to server
 const socket = io();
 
-// DOM elements
-const loginSection = document.getElementById('login-section');
-const userInfoSection = document.getElementById('user-info');
-const usernameInput = document.getElementById('username');
-const joinBtn = document.getElementById('join-btn');
-const joinError = document.getElementById('join-error');
-const currentUserSpan = document.getElementById('current-user');
-const logoutBtn = document.getElementById('logout-btn');
-const userListEl = document.getElementById('user-list');
-const statusMessage = document.getElementById('status-message');
+// dom elements get from page
+const loginSection_el = document.getElementById('login-section');
+const userInfoSection_el = document.getElementById('user-info');
+const usernameInput_el = document.getElementById('username');
+const joinBtn_el = document.getElementById('join-btn');
+const joinError_el = document.getElementById('join-error');
+const currentUserSpan_el = document.getElementById('current-user');
+const logoutBtn_el = document.getElementById('logout-btn');
+const userListEl_main = document.getElementById('user-list');
+const statusMessage_el = document.getElementById('status-message');
 
-const gameWaiting = document.getElementById('game-waiting');
-const challengeNotification = document.getElementById('challenge-notification');
-const challengerNameSpan = document.getElementById('challenger-name');
-const acceptBtn = document.getElementById('accept-btn');
-const rejectBtn = document.getElementById('reject-btn');
+const gameWaiting_section = document.getElementById('game-waiting');
+const challengeNotification_el = document.getElementById('challenge-notification');
+const challengerNameSpan_el = document.getElementById('challenger-name');
+const acceptBtn_el = document.getElementById('accept-btn');
+const rejectBtn_el = document.getElementById('reject-btn');
 
-const gameUI = document.getElementById('game-ui');
-const questionNumberSpan = document.getElementById('question-number');
-const totalQuestionsSpan = document.getElementById('total-questions');
-const timerSpan = document.getElementById('timer');
-const opponentNameSpan = document.getElementById('opponent-name');
-const yourScoreSpan = document.getElementById('your-score');
-const opponentScoreSpan = document.getElementById('opponent-score');
-const questionText = document.getElementById('question-text');
-const optionsContainer = document.getElementById('options-container');
-const answerFeedback = document.getElementById('answer-feedback');
+const gameUI_section = document.getElementById('game-ui');
+const questionNumberSpan_el = document.getElementById('question-number');
+const totalQuestionsSpan_el = document.getElementById('total-questions');
+const timerSpan_el = document.getElementById('timer');
+const opponentNameSpan_el = document.getElementById('opponent-name');
+const yourScoreSpan_el = document.getElementById('your-score');
+const opponentScoreSpan_el = document.getElementById('opponent-score');
+const questionText_el = document.getElementById('question-text');
+const optionsContainer_el = document.getElementById('options-container');
+const answerFeedback_el = document.getElementById('answer-feedback');
 
-const gameResult = document.getElementById('game-result');
-const finalYourScore = document.getElementById('final-your-score');
-const finalOpponentScore = document.getElementById('final-opponent-score');
-const winnerDisplay = document.getElementById('winner-display');
-const newGameBtn = document.getElementById('new-game-btn');
+const gameResult_section = document.getElementById('game-result');
+const finalYourScore_el = document.getElementById('final-your-score');
+const finalOpponentScore_el = document.getElementById('final-opponent-score');
+const winnerDisplay_el = document.getElementById('winner-display');
+const newGameBtn_el = document.getElementById('new-game-btn');
 
-// Game status
-let currentUser = null;
-let currentGameId = null;
-let currentChallenger = null;
-let timerInterval = null;
-let timeLeft = 15;
-let hasTimedOut = false; // Add flag to judge if timeout already
+// game status variables define
+let currentUser_name = null;
+let currentGameId_str = null;
+let currentChallenger_obj = null;
+let timerInterval_var = null;
+let timeLeft_count = 15;
+let hasTimedOut_flag = false; // add flag to judge if timeout already happen
 
-// Event listen
-joinBtn.addEventListener('click', joinGame);
-logoutBtn.addEventListener('click', logoutGame);
-acceptBtn.addEventListener('click', acceptChallenge);
-rejectBtn.addEventListener('click', rejectChallenge);
-newGameBtn.addEventListener('click', resetGameUI);
+// event listen setup
+joinBtn_el.addEventListener('click', joinGame_func);
+logoutBtn_el.addEventListener('click', logoutGame_func);
+acceptBtn_el.addEventListener('click', acceptChallenge_func);
+rejectBtn_el.addEventListener('click', rejectChallenge_func);
+newGameBtn_el.addEventListener('click', resetGameUI_func);
 
-// Join game
-function joinGame() {
-  const username = usernameInput.value.trim();
+// join game function implement
+function joinGame_func() {
+  const username_input = usernameInput_el.value.trim();
   
-  if (username === '') {
-    showJoinError('Username cannot be empty');
+  if (username_input === '') {
+    showJoinError_func('Username cannot be empty');
     return;
   }
   
-  socket.emit('userJoin', username);
+  socket.emit('userJoin', username_input);
 }
 
-// Logout game
-function logoutGame() {
-  // Refresh page to simulate logout
+// logout game function implement
+function logoutGame_func() {
+  // refresh page to simulate logout process
   window.location.reload();
 }
 
-// Show join error
-function showJoinError(message) {
-  joinError.textContent = message;
-  joinError.classList.remove('d-none');
+// show join error message function
+function showJoinError_func(message) {
+  joinError_el.textContent = message;
+  joinError_el.classList.remove('d-none');
 }
 
-// Handle join game success
-function handleJoinSuccess(username) {
-  currentUser = username;
-  currentUserSpan.textContent = username;
+// handle join game success process
+function handleJoinSuccess_func(username) {
+  currentUser_name = username;
+  currentUserSpan_el.textContent = username;
   
-  // Show user info, hide login
-  loginSection.classList.add('d-none');
-  userInfoSection.classList.remove('d-none');
+  // show user info, hide login section
+  loginSection_el.classList.add('d-none');
+  userInfoSection_el.classList.remove('d-none');
   
-  joinError.classList.add('d-none');
+  joinError_el.classList.add('d-none');
 }
 
-// Update user list
-function updateUserList(users) {
+// update user list function implement
+function updateUserList_func(users) {
   if (!users || users.length <= 1) {
-    userListEl.innerHTML = '<li class="list-group-item text-center text-muted">No other player online</li>';
+    userListEl_main.innerHTML = '<li class="list-group-item text-center text-muted">No other player online</li>';
     return;
   }
   
-  userListEl.innerHTML = '';
+  userListEl_main.innerHTML = '';
   
   users.forEach(user => {
-    if (user.username !== currentUser) {
-      const li = document.createElement('li');
-      li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    if (user.username !== currentUser_name) {
+      const li_element = document.createElement('li');
+      li_element.className = 'list-group-item d-flex justify-content-between align-items-center';
       
       if (user.status === 'busy') {
-        li.classList.add('text-muted');
-        li.innerHTML = `
+        li_element.classList.add('text-muted');
+        li_element.innerHTML = `
           ${user.username}
           <span class="badge bg-secondary">In Game</span>
         `;
       } else {
-        li.innerHTML = `
+        li_element.innerHTML = `
           ${user.username}
           <button class="btn btn-sm btn-outline-primary challenge-btn" data-id="${user.id}">Challenge</button>
         `;
       }
       
-      userListEl.appendChild(li);
+      userListEl_main.appendChild(li_element);
     }
   });
   
-  // Add challenge button event listen
+  // add challenge button event listen setup
   document.querySelectorAll('.challenge-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      const targetId = btn.getAttribute('data-id');
-      challengeUser(targetId);
+      const targetId_get = btn.getAttribute('data-id');
+      challengeUser_func(targetId_get);
     });
   });
 }
 
-// Challenge user
-function challengeUser(targetId) {
+// challenge user function implement
+function challengeUser_func(targetId) {
   socket.emit('sendChallenge', targetId);
-  statusMessage.textContent = 'Challenge sent, waiting for opponent accept...';
-  statusMessage.className = 'alert alert-warning';
+  statusMessage_el.textContent = 'Challenge sent, waiting for opponent accept...';
+  statusMessage_el.className = 'alert alert-warning';
 }
 
-// Show challenge notice
-function showChallengeNotification(challenger) {
-  currentChallenger = challenger;
-  challengerNameSpan.textContent = challenger.username;
-  challengeNotification.classList.remove('d-none');
+// show challenge notification function
+function showChallengeNotification_func(challenger) {
+  currentChallenger_obj = challenger;
+  challengerNameSpan_el.textContent = challenger.username;
+  challengeNotification_el.classList.remove('d-none');
 }
 
-// Accept challenge
-function acceptChallenge() {
-  if (!currentChallenger) return;
+// accept challenge function implement
+function acceptChallenge_func() {
+  if (!currentChallenger_obj) return;
   
-  socket.emit('acceptChallenge', currentChallenger.id);
-  challengeNotification.classList.add('d-none');
+  socket.emit('acceptChallenge', currentChallenger_obj.id);
+  challengeNotification_el.classList.add('d-none');
 }
 
-// Reject challenge
-function rejectChallenge() {
-  if (!currentChallenger) return;
+// reject challenge function implement
+function rejectChallenge_func() {
+  if (!currentChallenger_obj) return;
   
-  socket.emit('rejectChallenge', currentChallenger.id);
-  challengeNotification.classList.add('d-none');
-  currentChallenger = null;
+  socket.emit('rejectChallenge', currentChallenger_obj.id);
+  challengeNotification_el.classList.add('d-none');
+  currentChallenger_obj = null;
 }
 
-// Start game
-function startGame(data) {
-  currentGameId = data.gameId;
+// start game function implement
+function startGame_func(data) {
+  currentGameId_str = data.gameId;
   
-  // Update UI
-  gameWaiting.classList.add('d-none');
-  gameUI.classList.remove('d-none');
-  gameResult.classList.add('d-none');
+  // update ui elements display
+  gameWaiting_section.classList.add('d-none');
+  gameUI_section.classList.remove('d-none');
+  gameResult_section.classList.add('d-none');
   
-  opponentNameSpan.textContent = data.opponent;
-  totalQuestionsSpan.textContent = data.questionCount;
-  yourScoreSpan.textContent = '0';
-  opponentScoreSpan.textContent = '0';
+  opponentNameSpan_el.textContent = data.opponent;
+  totalQuestionsSpan_el.textContent = data.questionCount;
+  yourScoreSpan_el.textContent = '0';
+  opponentScoreSpan_el.textContent = '0';
   
-  // Update status message
-  statusMessage.textContent = `Game playing, opponent: ${data.opponent}`;
-  statusMessage.className = 'alert alert-success';
+  // update status message display
+  statusMessage_el.textContent = `Game playing, opponent: ${data.opponent}`;
+  statusMessage_el.className = 'alert alert-success';
 }
 
-// Show new question
-function showQuestion(data) {
-  clearInterval(timerInterval);
-  hasTimedOut = false; // Reset timeout flag
+// show new question function implement
+function showQuestion_func(data) {
+  clearInterval(timerInterval_var);
+  hasTimedOut_flag = false; // reset timeout flag status
   
-  questionNumberSpan.textContent = data.questionNumber;
-  questionText.textContent = data.question;
+  questionNumberSpan_el.textContent = data.questionNumber;
+  questionText_el.textContent = data.question;
   
-  // Create option buttons
-  optionsContainer.innerHTML = '';
+  // create option buttons for answer
+  optionsContainer_el.innerHTML = '';
   data.options.forEach((option, index) => {
-    const button = document.createElement('button');
-    button.className = 'btn btn-outline-primary option-btn';
-    button.textContent = option;
-    button.setAttribute('data-index', index);
-    button.addEventListener('click', () => {
-      submitAnswer(index);
-      disableAllOptions();
+    const button_element = document.createElement('button');
+    button_element.className = 'btn btn-outline-primary option-btn';
+    button_element.textContent = option;
+    button_element.setAttribute('data-index', index);
+    button_element.addEventListener('click', () => {
+      submitAnswer_func(index);
+      disableAllOptions_func();
     });
-    optionsContainer.appendChild(button);
+    optionsContainer_el.appendChild(button_element);
   });
   
-  // Hide answer feedback
-  answerFeedback.classList.add('d-none');
+  // hide answer feedback section
+  answerFeedback_el.classList.add('d-none');
   
-  // Start countdown
-  startTimer();
+  // start timer for question
+  startTimer_func();
 }
 
-// Disable all options
-function disableAllOptions() {
+// disable all options function implement
+function disableAllOptions_func() {
   document.querySelectorAll('.option-btn').forEach(btn => {
     btn.disabled = true;
-    btn.classList.add('disabled');
+    btn.classList.remove('btn-outline-primary');
+    btn.classList.add('btn-secondary');
   });
 }
 
-// Start countdown
-function startTimer() {
-  timeLeft = 15;
-  updateTimerDisplay();
+// start timer function implement
+function startTimer_func() {
+  timeLeft_count = 15;
+  updateTimerDisplay_func();
   
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimerDisplay();
+  timerInterval_var = setInterval(() => {
+    timeLeft_count--;
+    updateTimerDisplay_func();
     
-    if (timeLeft <= 0) {
-      // Do not immediately stop the timer, just disable options and show feedback
-      disableAllOptions();
-      showAnswerFeedback(false, 'Time up! ');
+    if (timeLeft_count <= 0) {
+      clearInterval(timerInterval_var);
       
-      // Mark as timed out and send timed out information
-      if (!hasTimedOut) {
-        hasTimedOut = true;
-        socket.emit('submitAnswer', {
-          gameId: currentGameId,
-          answerIndex: -1, // -1 means timed out without answering
-          timeout: true
-        });
+      // check if not timeout already happen
+      if (!hasTimedOut_flag) {
+        hasTimedOut_flag = true;
+        
+        // disable all options when timeout
+        disableAllOptions_func();
+        
+        // submit timeout answer to server
+        if (currentGameId_str) {
+          socket.emit('submitAnswer', {
+            gameId: currentGameId_str,
+            answerIndex: -1,
+            timeout: true
+          });
+        }
+        
+        // show timeout feedback message
+        showAnswerFeedback_func(false, 'Time up! You not answer in time.');
       }
-      
-      // Set timer to 0 and keep it at 0
-      timeLeft = 0;
-      updateTimerDisplay();
     }
   }, 1000);
 }
 
-// Update timer display
-function updateTimerDisplay() {
-  // Display both Chinese and English countdown
-  timerSpan.textContent = `${timeLeft}s (${timeLeft} seconds left)`;
+// update timer display function
+function updateTimerDisplay_func() {
+  timerSpan_el.textContent = timeLeft_count;
   
-  // Change color based on remaining time
-  if (timeLeft <= 5) {
-    timerSpan.className = 'badge bg-danger';
-  } else if (timeLeft <= 10) {
-    timerSpan.className = 'badge bg-warning';
+  if (timeLeft_count <= 5) {
+    timerSpan_el.classList.remove('bg-warning');
+    timerSpan_el.classList.add('bg-danger');
   } else {
-    timerSpan.className = 'badge bg-primary';
+    timerSpan_el.classList.remove('bg-danger');
+    timerSpan_el.classList.add('bg-warning');
   }
 }
 
-// Submit answer
-function submitAnswer(answerIndex) {
-  // Do not clear the timer, let it continue running
-  // clearInterval(timerInterval);
+// submit answer function implement
+function submitAnswer_func(answerIndex) {
+  if (!currentGameId_str || hasTimedOut_flag) return;
   
-  // Disable options but keep countdown running
-  disableAllOptions();
+  // prevent multiple answer submit
+  hasTimedOut_flag = true;
   
   socket.emit('submitAnswer', {
-    gameId: currentGameId,
-    answerIndex: answerIndex
+    gameId: currentGameId_str,
+    answerIndex: answerIndex,
+    timeout: false
   });
 }
 
-// Show answer feedback
-function showAnswerFeedback(correct, message) {
-  // Add English hint
-  let feedback = '';
-  if (message) {
-    feedback = message;
-  } else if (correct) {
-    feedback = 'Correct answer! (答对了!)';
+// show answer feedback function
+function showAnswerFeedback_func(correct, message) {
+  answerFeedback_el.classList.remove('d-none', 'alert-success', 'alert-danger');
+  
+  if (correct) {
+    answerFeedback_el.classList.add('alert-success');
+    answerFeedback_el.textContent = message || 'Correct answer! Well done!';
   } else {
-    feedback = 'Wrong answer! (答错了!)';
+    answerFeedback_el.classList.add('alert-danger');
+    answerFeedback_el.textContent = message || 'Wrong answer! Try better next time.';
   }
-  
-  answerFeedback.textContent = feedback;
-  answerFeedback.className = `alert mt-3 ${correct ? 'alert-success' : 'alert-danger'}`;
-  answerFeedback.classList.remove('d-none');
-  
-  // Do not operate the timer, let it continue running until server decides next step
 }
 
-// Update score
-function updateScore(data) {
-  yourScoreSpan.textContent = data.yourScore;
-  opponentScoreSpan.textContent = data.opponentScore;
+// update score display function
+function updateScore_func(data) {
+  yourScoreSpan_el.textContent = data.yourScore;
+  opponentScoreSpan_el.textContent = data.opponentScore;
 }
 
-// Show game result
-function showGameResult(data) {
-  // Stop the timer
-  clearInterval(timerInterval);
+// show game result function implement
+function showGameResult_func(data) {
+  // hide game ui, show result section
+  gameUI_section.classList.add('d-none');
+  gameResult_section.classList.remove('d-none');
   
-  // Hide game interface, show result
-  gameUI.classList.add('d-none');
-  gameResult.classList.remove('d-none');
+  finalYourScore_el.textContent = data.yourScore;
+  finalOpponentScore_el.textContent = data.opponentScore;
   
-  // Update final scores
-  finalYourScore.textContent = data.yourScore;
-  finalOpponentScore.textContent = data.opponentScore;
-  
-  // Show winner, add English hint
-  if (data.winner) {
-    if (data.winner === currentUser) {
-      winnerDisplay.textContent = 'Congratulations, you win! (恭喜获胜!)';
-      winnerDisplay.className = 'alert alert-success my-3';
-    } else {
-      winnerDisplay.textContent = `${data.winner} wins! (${data.winner} 获胜!)`;
-      winnerDisplay.className = 'alert alert-warning my-3';
-    }
+  // determine winner and show message
+  let winnerMessage_str = '';
+  if (data.winner === null) {
+    winnerMessage_str = 'It is a tie game! Good job both!';
+    winnerDisplay_el.className = 'alert alert-info my-3';
+  } else if (data.winner === currentUser_name) {
+    winnerMessage_str = 'Congratulations! You win the game!';
+    winnerDisplay_el.className = 'alert alert-success my-3';
   } else {
-    winnerDisplay.textContent = 'It\'s a tie! (平局!)';
-    winnerDisplay.className = 'alert alert-info my-3';
+    winnerMessage_str = `${data.winner} win the game. Try again next time!`;
+    winnerDisplay_el.className = 'alert alert-warning my-3';
   }
   
-  // Update status
-  statusMessage.textContent = 'Game Over (游戏结束)';
-  statusMessage.className = 'alert alert-info';
+  winnerDisplay_el.textContent = winnerMessage_str;
+  
+  // update status message back
+  statusMessage_el.textContent = 'Game finished! You can start new game or challenge other player.';
+  statusMessage_el.className = 'alert alert-info';
 }
 
-// Handle opponent left
-function handleOpponentLeft() {
-  clearInterval(timerInterval);
+// handle opponent left function
+function handleOpponentLeft_func() {
+  alert('Your opponent leave the game. Game will end now.');
+  resetGameUI_func();
+}
+
+// reset game ui function implement
+function resetGameUI_func() {
+  // clear game status variables
+  currentGameId_str = null;
+  currentChallenger_obj = null;
+  hasTimedOut_flag = false;
   
-  // If in game, show interruption information
-  if (currentGameId) {
-    showAnswerFeedback(false, 'Opponent left the game! (对手离开了游戏!)');
-    setTimeout(() => {
-      resetGameUI();
-    }, 2000);
+  if (timerInterval_var) {
+    clearInterval(timerInterval_var);
+    timerInterval_var = null;
   }
+  
+  // show waiting section, hide others
+  gameWaiting_section.classList.remove('d-none');
+  gameUI_section.classList.add('d-none');
+  gameResult_section.classList.add('d-none');
+  challengeNotification_el.classList.add('d-none');
+  
+  // reset status message
+  statusMessage_el.textContent = 'Waiting for challenge or choose a player to challenge';
+  statusMessage_el.className = 'alert alert-info';
 }
 
-// Reset game interface
-function resetGameUI() {
-  // Ensure to clear the timer
-  clearInterval(timerInterval);
-  
-  gameResult.classList.add('d-none');
-  gameWaiting.classList.remove('d-none');
-  
-  statusMessage.textContent = 'Waiting for challenge or select a player to challenge (等待挑战或选择玩家挑战)';
-  statusMessage.className = 'alert alert-info';
-  
-  currentGameId = null;
-  hasTimedOut = false;
-}
-
-// Socket event listen
+// socket event listeners setup
 socket.on('joinError', (message) => {
-  showJoinError(message);
+  showJoinError_func(message);
 });
 
 socket.on('updateUserList', (users) => {
-  if (currentUser) {
-    updateUserList(users);
-  } else if (users.find(user => user.id === socket.id)) {
-    // If user in list but currentUser not set, means just joined successfully
-    const user = users.find(user => user.id === socket.id);
-    handleJoinSuccess(user.username);
-    updateUserList(users);
+  if (currentUser_name) {
+    updateUserList_func(users);
   }
 });
 
 socket.on('challengeReceived', (challenger) => {
-  showChallengeNotification(challenger);
+  showChallengeNotification_func(challenger);
 });
 
 socket.on('challengeRejected', (username) => {
-  statusMessage.textContent = `${username} rejected your challenge (${username} 拒绝了您的挑战)`;
-  statusMessage.className = 'alert alert-danger';
+  statusMessage_el.textContent = `${username} reject your challenge. Try challenge other player.`;
+  statusMessage_el.className = 'alert alert-warning';
 });
 
 socket.on('gameStart', (data) => {
-  startGame(data);
+  startGame_func(data);
 });
 
 socket.on('newQuestion', (data) => {
-  // Ensure to clear timer before new question starts
-  clearInterval(timerInterval);
-  showQuestion(data);
+  showQuestion_func(data);
 });
 
-socket.on('answerResult', (data) => {
-  showAnswerFeedback(data.correct);
-  yourScoreSpan.textContent = data.score;
+socket.on('answerResult', ({ correct, score }) => {
+  yourScoreSpan_el.textContent = score;
+  showAnswerFeedback_func(correct);
 });
 
 socket.on('updateScore', (data) => {
-  // When updating scores, means question answered, should stop timer
-  clearInterval(timerInterval);
-  updateScore(data);
+  updateScore_func(data);
 });
 
 socket.on('gameEnd', (data) => {
-  showGameResult(data);
+  showGameResult_func(data);
 });
 
 socket.on('opponentLeft', () => {
-  handleOpponentLeft();
+  handleOpponentLeft_func();
 });
 
-// When user successfully connects
-socket.on('connect', () => {
-  console.log('Connected to server');
+// when page load, check if user already login
+document.addEventListener('DOMContentLoaded', () => {
+  // auto focus username input
+  usernameInput_el.focus();
+  
+  // allow enter key to join game
+  usernameInput_el.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      joinGame_func();
+    }
+  });
 });
 
-// Handle server disconnect
-socket.on('disconnect', () => {
-  console.log('Disconnected from server');
-});
-
-// When username input changes, clear error hint
-usernameInput.addEventListener('input', () => {
-  joinError.classList.add('d-none');
-});
-
-// Username input box Enter key triggers join
-usernameInput.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    joinGame();
+// handle successful user join
+socket.on('updateUserList', (users) => {
+  const userExists_check = users.find(user => user.username === usernameInput_el.value.trim());
+  if (userExists_check && !currentUser_name) {
+    handleJoinSuccess_func(userExists_check.username);
+  }
+  
+  if (currentUser_name) {
+    updateUserList_func(users);
   }
 }); 
